@@ -259,7 +259,7 @@ class RAGPipeline:
 
         # LLM call via Groq
         response = self.groq_client.chat.completions.create(
-            model="llama3-8b-8192",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": question},

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TechCorp Policy Assistant</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a56db, #0e9f6e);
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    header .logo {
+      width: 42px; height: 42px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    header h1 { font-size: 1.3rem; font-weight: 700; }
+    header p { font-size: 0.82rem; opacity: 0.85; margin-top: 2px; }
+
+    .badge {
+      margin-left: auto;
+      background: rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    main {
+      flex: 1;
+      max-width: 860px;
+      width: 100%;
+      margin: 24px auto;
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    #chat-box {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+      padding: 24px;
+      min-height: 420px;
+      max-height: 520px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .message {
+      display: flex;
+      flex-direction: column;
+      max-width: 85%;
+    }
+    .message.user { align-self: flex-end; }
+    .message.bot  { align-self: flex-start; }
+
+    .bubble {
+      border-radius: 16px;
+      padding: 12px 16px;
+      line-height: 1.55;
+      font-size: 0.93rem;
+    }
+    .message.user .bubble {
+      background: #1a56db;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    .message.bot .bubble {
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-bottom-left-radius: 4px;
+      color: #1f2937;
+    }
+
+    .citations {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .citation-tag {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .latency {
+      font-size: 0.7rem;
+      color: #9ca3af;
+      margin-top: 4px;
+      padding-left: 4px;
+    }
+
+    .typing-indicator {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      padding: 10px 14px;
+    }
+    .typing-indicator span {
+      width: 8px; height: 8px;
+      background: #9ca3af;
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-8px); }
+    }
+
+    .input-area {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+      padding: 16px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    #question {
+      flex: 1;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.93rem;
+      resize: none;
+      height: 52px;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    #question:focus {
+      outline: none;
+      border-color: #1a56db;
+    }
+
+    #send-btn {
+      background: #1a56db;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-size: 0.93rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+    #send-btn:hover { background: #1e429f; }
+    #send-btn:active { transform: scale(0.97); }
+    #send-btn:disabled { background: #93c5fd; cursor: not-allowed; }
+
+    .suggestions {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+      padding: 16px;
+    }
+    .suggestions h3 {
+      font-size: 0.82rem;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+    }
+    .suggestion-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .chip {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      color: #374151;
+      transition: background 0.2s;
+    }
+    .chip:hover { background: #dbeafe; border-color: #93c5fd; color: #1e40af; }
+
+    .welcome-msg {
+      text-align: center;
+      padding: 32px 24px;
+      color: #6b7280;
+    }
+    .welcome-msg .icon { font-size: 3rem; margin-bottom: 12px; }
+    .welcome-msg h2 { color: #374151; margin-bottom: 6px; }
+    .welcome-msg p { font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🏢</div>
+  <div>
+    <h1>TechCorp Policy Assistant</h1>
+    <p>Ask anything about company policies & procedures</p>
+  </div>
+  <div class="badge">RAG Powered</div>
+</header>
+
+<main>
+  <div id="chat-box">
+    <div class="welcome-msg">
+      <div class="icon">📋</div>
+      <h2>Hello! I'm your Policy Assistant</h2>
+      <p>I can answer questions about PTO, remote work, expenses, security, benefits, and more.<br/>
+         All answers are sourced directly from TechCorp's official policy documents.</p>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <textarea id="question" placeholder="Ask about company policies... (e.g., 'How many PTO days do I get?')" rows="1"></textarea>
+    <button id="send-btn" onclick="sendMessage()">Send ↑</button>
+  </div>
+
+  <div class="suggestions">
+    <h3>Suggested questions</h3>
+    <div class="suggestion-chips">
+      <div class="chip" onclick="askChip(this)">How many PTO days do new employees get?</div>
+      <div class="chip" onclick="askChip(this)">What is the remote work policy?</div>
+      <div class="chip" onclick="askChip(this)">How do I submit an expense claim?</div>
+      <div class="chip" onclick="askChip(this)">What holidays does TechCorp observe?</div>
+      <div class="chip" onclick="askChip(this)">What is the 401k match?</div>
+      <div class="chip" onclick="askChip(this)">What are the password requirements?</div>
+      <div class="chip" onclick="askChip(this)">How does the performance review process work?</div>
+      <div class="chip" onclick="askChip(this)">What parental leave is available?</div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const chatBox = document.getElementById("chat-box");
+  const questionInput = document.getElementById("question");
+  const sendBtn = document.getElementById("send-btn");
+
+  questionInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  function askChip(el) {
+    questionInput.value = el.textContent;
+    sendMessage();
+  }
+
+  function appendMessage(role, content, citations = [], latencyMs = null) {
+    // Remove welcome message on first real message
+    const welcome = chatBox.querySelector(".welcome-msg");
+    if (welcome) welcome.remove();
+
+    const msgDiv = document.createElement("div");
+    msgDiv.className = `message ${role}`;
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.textContent = content;
+    msgDiv.appendChild(bubble);
+
+    if (citations && citations.length > 0) {
+      const citDiv = document.createElement("div");
+      citDiv.className = "citations";
+      citations.forEach(c => {
+        const tag = document.createElement("span");
+        tag.className = "citation-tag";
+        tag.textContent = `📄 ${c.doc_id}: ${c.title}`;
+        citDiv.appendChild(tag);
+      });
+      msgDiv.appendChild(citDiv);
+    }
+
+    if (latencyMs !== null) {
+      const lat = document.createElement("div");
+      lat.className = "latency";
+      lat.textContent = `⏱ ${latencyMs}ms`;
+      msgDiv.appendChild(lat);
+    }
+
+    chatBox.appendChild(msgDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function showTyping() {
+    const div = document.createElement("div");
+    div.className = "message bot";
+    div.id = "typing";
+    div.innerHTML = `<div class="bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById("typing");
+    if (t) t.remove();
+  }
+
+  async function sendMessage() {
+    const question = questionInput.value.trim();
+    if (!question) return;
+
+    appendMessage("user", question);
+    questionInput.value = "";
+    sendBtn.disabled = true;
+    showTyping();
+
+    try {
+      const res = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      });
+      const data = await res.json();
+      removeTyping();
+
+      if (data.error) {
+        appendMessage("bot", `❌ Error: ${data.error}`);
+      } else {
+        appendMessage("bot", data.answer, data.citations, data.latency_ms);
+      }
+    } catch (err) {
+      removeTyping();
+      appendMessage("bot", "❌ Network error. Please try again.");
+    } finally {
+      sendBtn.disabled = false;
+      questionInput.focus();
+    }
+  }
+</script>
+
+</body>
+</html>

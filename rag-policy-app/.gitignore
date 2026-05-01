@@ -1,0 +1,30 @@
+# Environment
+.env
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# ChromaDB (vector store — rebuilt automatically)
+chroma_db/
+
+# Model cache (downloaded automatically by sentence-transformers)
+.cache/
+models/
+
+# Evaluation output
+evaluation_results.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Distribution
+dist/
+build/
+*.egg-info/
